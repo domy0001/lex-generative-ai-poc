@@ -1,0 +1,43 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  connect-lex
+
+  Sample SAM Template for connect-lex
+  
+Parameters:
+  BedrockRegion:
+    Type: String
+    Default: "us-east-1"
+
+Resources:
+  S3Application:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: templates/s3/template.yaml
+        
+
+  ConnectApplication:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: templates/connect/template.yaml        
+      Parameters:
+        GenAiLexBotAliasArn: !GetAtt LexApplication.Outputs.LexBotAliasArn
+  
+  LexApplication:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: templates/lex/template.yaml
+      Parameters:
+        DbVectorS3: !GetAtt S3Application.Outputs.S3VectorArn
+        BedrockRegion: !Ref BedrockRegion
+
+  LambdaApplication:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: templates/lambdas/template.yaml
+      Parameters:
+        DbVectorS3: !GetAtt S3Application.Outputs.S3VectorArn
+    
+
+  

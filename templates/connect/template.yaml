@@ -1,0 +1,38 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  GenAiLexBotAliasArn:
+    Type: String
+  TestAssistantVoiceCAAB:
+    Type: String
+    Default: !Sub ${TestAssistantVoiceCAAB}
+
+Resources:
+  ConnectInstance:
+    Type: AWS::Connect::Instance
+    Properties:
+      Attributes:
+        InboundCalls: true
+        OutboundCalls: true
+      IdentityManagementType: CONNECT_MANAGED
+      InstanceAlias: gen-ai-connect-instance
+
+  ConnectInstanceIntegration:
+    Type: AWS::Connect::IntegrationAssociation
+    Properties:
+      InstanceId: !Ref ConnectInstance
+      IntegrationArn: !Ref GenAiLexBotAliasArn
+      IntegrationType: LEX_BOT
+
+  LexContactFlows:
+    Type: AWS::Connect::ContactFlow
+    Properties:
+      Content: !Ref TestAssistantVoiceCAAB
+      InstanceArn: !GetAtt ConnectInstance.Arn
+      Name: TestContactFlow
+      Type: CONTACT_FLOW
+
+
+
+

@@ -1,0 +1,27 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  DbVectorS3:
+    Type: String
+  
+Resources:
+  LangChainLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../code/LangChain/
+      Handler: index.handler
+      Runtime: python3.9
+      Policies: 
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:PutObject
+              Resource: !Ref DbVectorS3
+
+
+
+

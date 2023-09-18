@@ -1,0 +1,106 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Parameters:
+  DbVectorS3:
+    Type: String
+  BedrockRegion:
+    Type: String
+  LexConfigBucketName:
+    Type: String
+    Default: 'lex-bot-config-bucket'
+  LexConfigObjectKey:
+    Type: String
+    Default: 'voiceAssistantCAAB_voice-DRAFT-XE1QKAX6JY-LexJson.zip'
+  
+
+Resources:
+  GenAiLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../code/Bedrock/
+      Handler: index.handler
+      Runtime: python3.9
+      Policies: 
+        - AWSLambdaExecute
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: !Ref DbVectorS3
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: 
+              - bedrock:*
+              Resource: '*'
+      Environment:
+        Variables:
+          BEDROCK_REGION: !Ref BedrockRegion
+
+  GenAiLambdaVersion:
+    Type: AWS::Lambda::Version
+    Properties:
+      FunctionName: !Ref GenAiLambda
+      Description: v1
+
+  GenAiLexBot:
+    Type: AWS::Lex::Bot
+    Properties:
+      DataPrivacy:
+          ChildDirected: false
+      IdleSessionTTLInSeconds: 1800
+      Name: GenAIBot
+      RoleArn: !GetAtt GenAiLexBotRole.Arn
+      BotFileS3Location:
+        S3Bucket: !Ref LexConfigBucketName
+        S3ObjectKey: !Ref LexConfigObjectKey           
+
+  GenAiLexBotRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lexv2.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: "/"
+      Policies:
+        - PolicyName: LexRuntimeRolePolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "polly:SynthesizeSpeech"
+                Resource: "*"
+
+  GenAiLexBotAlias:
+    Type: AWS::Lex::BotAlias
+    Properties:
+      BotAliasName: genAiLexBotAlias
+      BotId: !Ref GenAiLexBot
+      BotAliasLocaleSettings:
+        - BotAliasLocaleSetting:
+              Enabled: true
+              CodeHookSpecification:
+                LambdaCodeHook:
+                  CodeHookInterfaceVersion: "1.0"
+                  LambdaArn: !GetAtt GenAiLambda.Arn
+          LocaleId: it_IT
+
+
+Outputs:
+  LexBotArn: 
+    Value: !GetAtt GenAiLexBot.Arn
+  LexBotAliasArn:
+    Value: !GetAtt GenAiLexBotAlias.Arn
+
+
+
+  
