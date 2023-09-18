@@ -4,7 +4,7 @@ import json
 bedrock = boto3.client('bedrock', 'region')
 model_id= 'amazon.titan-tg1-large'
 
-def index(event, context):
+def handler(event, context):
     lex_input = event['inputTranscript']
     content_type = 'application/json'
     accept = 'application/json'

@@ -18,8 +18,8 @@ Resources:
   GenAiLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../code/Bedrock/
-      Handler: index.handler
+      CodeUri: ../../code/zip/bedrock.zip
+      Handler: bedrock_call.handler
       Runtime: python3.9
       Policies: 
         - AWSLambdaExecute

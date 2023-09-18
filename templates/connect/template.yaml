@@ -4,9 +4,8 @@ Transform: AWS::Serverless-2016-10-31
 Parameters:
   GenAiLexBotAliasArn:
     Type: String
-  TestAssistantVoiceCAAB:
+  TestAssistantVoiceCAABDecoded:
     Type: String
-    Default: !Sub ${TestAssistantVoiceCAAB}
 
 Resources:
   ConnectInstance:
@@ -28,7 +27,7 @@ Resources:
   LexContactFlows:
     Type: AWS::Connect::ContactFlow
     Properties:
-      Content: !Ref TestAssistantVoiceCAAB
+      Content: !Ref TestAssistantVoiceCAABDecoded
       InstanceArn: !GetAtt ConnectInstance.Arn
       Name: TestContactFlow
       Type: CONTACT_FLOW

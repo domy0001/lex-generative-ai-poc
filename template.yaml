@@ -9,6 +9,8 @@ Parameters:
   BedrockRegion:
     Type: String
     Default: "us-east-1"
+  TestAssistantVoiceCAAB:
+    Type: String
 
 Resources:
   S3Application:
@@ -23,6 +25,7 @@ Resources:
       Location: templates/connect/template.yaml        
       Parameters:
         GenAiLexBotAliasArn: !GetAtt LexApplication.Outputs.LexBotAliasArn
+        TestAssistantVoiceCAABDecoded: !GetAtt LambdaApplication.Outputs.TestAssistantVoiceCAABDecoded
   
   LexApplication:
     Type: AWS::Serverless::Application
@@ -38,6 +41,7 @@ Resources:
       Location: templates/lambdas/template.yaml
       Parameters:
         DbVectorS3: !GetAtt S3Application.Outputs.S3VectorArn
+        TestAssistantVoiceCAAB: !Ref TestAssistantVoiceCAAB
     
 
   

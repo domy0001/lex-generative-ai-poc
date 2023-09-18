@@ -1,17 +1,26 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+#Nel caso in cui ci siano più contact flow è necessario aggiungerli ad uno 
+#ad uno nei parameters e dopo inserirle nel Join dell' env var della lambda Base64DecodeLambda.
+#La custom resource invoca la lambda quando si deploya il template. La lambda
+#decodifica i contact flow encoded (Base64) in json string (usare direttamente il contact
+#flow come json string nei parameters-overrides crea problemi). Successivamente si deve aggiungere agli outputs
+#il singolo content del contact flow (guardare esmepio)
 Parameters:
   DbVectorS3:
     Type: String
-  
+  TestAssistantVoiceCAAB:
+    Type: String
+
 Resources:
   LangChainLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: ../../code/LangChain/
-      Handler: index.handler
+      CodeUri: ../../code/zip/langchain.zip
+      Handler: documents_management.handler
       Runtime: python3.9
+      PackageType: Zip
       Policies: 
         - AWSLambdaExecute
         - Version: '2012-10-17'
@@ -21,6 +30,35 @@ Resources:
                 - s3:GetObject
                 - s3:PutObject
               Resource: !Ref DbVectorS3
+  
+  Base64DecodeLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ../../code/zip/base_64_decode.zip
+      Handler: base_64_decode.handler
+      Runtime: python3.9
+      Policies: 
+        - AWSLambdaExecute
+      Environment:
+        Variables:
+          BASE_64_INPUT_VALUES: !Join [":", [!Ref TestAssistantVoiceCAAB]]
+
+  Base64DecodeCustomResource:
+    Type: Custom::BaseDecode
+    Properties:
+      ServiceToken: !GetAtt Base64DecodeLambda.Arn
+
+#Add also the elements in the outputs (the order is important)
+Outputs:
+  TestAssistantVoiceCAABDecoded:
+    Value: !Select [0, !GetAtt Base64DecodeCustomResource.Output]
+
+  
+
+
+  
+
+
 
 
 
