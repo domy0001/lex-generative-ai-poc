@@ -6,18 +6,22 @@ Description: >
   Sample SAM Template for connect-lex
   
 Parameters:
+  LoadLambdaName:
+    Type: String
   BedrockRegion:
     Type: String
     Default: "us-east-1"
-  TestAssistantVoiceCAAB:
+  ContactFlowsBucketName:
     Type: String
+  
 
 Resources:
   S3Application:
     Type: AWS::Serverless::Application
     Properties:
       Location: templates/s3/template.yaml
-        
+      Parameters:
+        ContactFlowsBucketName: !Ref ContactFlowsBucketName
 
   ConnectApplication:
     Type: AWS::Serverless::Application
@@ -25,7 +29,6 @@ Resources:
       Location: templates/connect/template.yaml        
       Parameters:
         GenAiLexBotAliasArn: !GetAtt LexApplication.Outputs.LexBotAliasArn
-        TestAssistantVoiceCAABDecoded: !GetAtt LambdaApplication.Outputs.TestAssistantVoiceCAABDecoded
   
   LexApplication:
     Type: AWS::Serverless::Application
@@ -41,7 +44,9 @@ Resources:
       Location: templates/lambdas/template.yaml
       Parameters:
         DbVectorS3: !GetAtt S3Application.Outputs.S3VectorArn
-        TestAssistantVoiceCAAB: !Ref TestAssistantVoiceCAAB
-    
+        ContactFlowsBucketName: !Ref ContactFlowsBucketName
+        LoadLambdaName: !Ref LoadLambdaName
+        ConnectInstanceArn: !GetAtt ConnectApplication.Outputs.ConnectInstanceArn
+        ConnectInstanceId: !GetAtt ConnectApplication.Outputs.ConnectInstanceId
 
   

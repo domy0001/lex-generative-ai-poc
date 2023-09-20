@@ -1,15 +1,21 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 
+Parameters:
+  ContactFlowsBucketName:
+    Type: String
+
 Resources:
   VectorS3:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: vect-db
 
+  
 Outputs:
   S3VectorArn:
     Value: !GetAtt VectorS3.Arn
+
 
 
   

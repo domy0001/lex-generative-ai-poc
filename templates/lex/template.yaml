@@ -11,7 +11,7 @@ Parameters:
     Default: 'lex-bot-config-bucket'
   LexConfigObjectKey:
     Type: String
-    Default: 'voiceAssistantCAAB_voice-DRAFT-XE1QKAX6JY-LexJson.zip'
+    Default: 'voiceAssistantCAAB_voice-DRAFT-1VZESSQEEG-LexJson.zip'
   
 
 Resources:
