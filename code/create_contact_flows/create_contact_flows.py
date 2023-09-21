@@ -1,6 +1,7 @@
 import io
 import os
 import gzip
+import json
 import boto3
 import base64
 import logging
@@ -10,6 +11,7 @@ connect_client = boto3.client('connect')
 s3_client = boto3.client('s3')
 
 instance_id = os.environ['CONNECT_INSTANCE_ID']
+print(f'Instance Id: {instance_id}')
 
 def handler(event, context):
     logging.info(f'Event body: {str(event)}')
@@ -36,13 +38,18 @@ def handler(event, context):
             with gzip.GzipFile(fileobj=io.BytesIO(decoded_value), mode="rb") as f:
                 output.append(f.read().decode("utf-8"))
         logging.info(f'Output: {str(output)}')
+        print(f'Contact Flow Names: {flow_names}')
+
         index = 0
         for flow in output:
-            create_contact_flow(
+            flow_json = json.loads(flow)
+            print(str(flow_json))
+            response = create_contact_flow(
                 instance_id=instance_id, 
                 name=flow_names[index], 
                 type='CONTACT_FLOW',
-                content=flow)
+                content=flow_json)
+            print(f'Boto response: {response}')
 
     except Exception as ex:
         print(f'Error: {str(ex)}')

@@ -45,6 +45,11 @@ Resources:
       FunctionName: !Ref GenAiLambda
       Description: v1
 
+  GenAiLexCloudWatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: GenAiLexBotLogGroup
+
   GenAiLexBot:
     Type: AWS::Lex::Bot
     Properties:
@@ -55,7 +60,7 @@ Resources:
       RoleArn: !GetAtt GenAiLexBotRole.Arn
       BotFileS3Location:
         S3Bucket: !Ref LexConfigBucketName
-        S3ObjectKey: !Ref LexConfigObjectKey           
+        S3ObjectKey: !Ref LexConfigObjectKey             
 
   GenAiLexBotRole:
     Type: AWS::IAM::Role
@@ -79,6 +84,15 @@ Resources:
                 Action:
                   - "polly:SynthesizeSpeech"
                 Resource: "*"
+        - PolicyName: LexLogsPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt GenAiLexCloudWatchLogGroup.Arn
 
   GenAiLexBotAlias:
     Type: AWS::Lex::BotAlias
@@ -93,6 +107,13 @@ Resources:
                   CodeHookInterfaceVersion: "1.0"
                   LambdaArn: !GetAtt GenAiLambda.Arn
           LocaleId: it_IT
+      ConversationLogSettings:
+        TextLogSettings: 
+          - Destination:
+              CloudWatch:
+                CloudWatchLogGroupArn: !GetAtt GenAiLexCloudWatchLogGroup.Arn
+                LogPrefix: gen-ai
+            Enabled: true
 
 
 Outputs:

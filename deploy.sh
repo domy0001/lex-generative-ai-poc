@@ -4,6 +4,14 @@ create_contact_flows_path="code/create_contact_flows/*"
 bedrock_path="code/bedrock_env/*"
 langchain_path="code/langchain_env/*"
 load_flows_path="code/load_contact_flows/*"
+create_dir="files/created"
+
+if [ ! -d "$create_dir" ]; then
+    mkdir -p "$create_dir"
+    echo "Directory created: $create_dir"
+else
+    echo "Directory already exists: $create_dir"
+fi
 
 if [ ! -d "$zip_dir" ]; then
     mkdir -p "$zip_dir"
@@ -28,7 +36,7 @@ value=""
 for json_path_file in $json_dir/*.json;
 do
     file_name=$(basename $json_path_file | cut -d. -f1)
-    if [ -f $json_file_path]; then
+    if [ -f $json_file_path] && [ ! -f $json_dir/created/$file_name_with_ext ]; then
         if [ -z $value]; then
             value=$file_name-$(cat "$json_path_file" | jq -c | jq -R | gzip -c | base64)
         else
@@ -52,9 +60,4 @@ invoke_lambda_payload='{
     "bucket_name": "'$contact_flows_bucket_name'"
 }'
 
-aws lambda invoke \
-    --function-name $load_lambda_name \
-    --region eu-central-1 \
-    --payload $invoke_lambda_payload \
-    --cli-binary-format raw-in-base64-out \
-    invoke_repsonse.json
+bash invoke_load_contact_flows_lambda.sh
