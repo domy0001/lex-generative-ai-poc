@@ -14,7 +14,6 @@ Parameters:
     Type: String
 
 Resources:
-
   ContactFlowS3:
     Type: AWS::S3::Bucket
     Properties:
@@ -36,6 +35,10 @@ Resources:
                 - s3:GetObject
                 - s3:PutObject
               Resource: !Ref DbVectorS3
+      Environment:
+        Variables:
+          OPENAI_API_KEY: ""
+          VECTOR_DB_ARN: !Ref DbVectorS3
   
   CreateContactFlowsLambdaRoleB:
     Type: AWS::IAM::Role

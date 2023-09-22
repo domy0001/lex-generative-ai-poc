@@ -38,6 +38,8 @@ Resources:
       Environment:
         Variables:
           BEDROCK_REGION: !Ref BedrockRegion
+          ACCOUNT_ID: ""
+          BEDROCK_ENDPOINT: ""
 
   GenAiLambdaVersion:
     Type: AWS::Lambda::Version
