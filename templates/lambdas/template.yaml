@@ -34,11 +34,11 @@ Resources:
               Action:
                 - s3:GetObject
                 - s3:PutObject
-              Resource: !Ref DbVectorS3
+              Resource: !Join ["", ["arn:aws:s3:::", !Ref DbVectorS3, "/*"]]
       Environment:
         Variables:
           OPENAI_API_KEY: ""
-          VECTOR_DB_ARN: !Ref DbVectorS3
+          VECTOR_DB_NAME: !Ref DbVectorS3
   
   CreateContactFlowsLambdaRoleB:
     Type: AWS::IAM::Role

@@ -1,4 +1,5 @@
 import os
+import boto3
 from langchain.document_loaders import Docx2txtLoader
 from langchain.document_loaders import PyPDFLoader
 from langchain.embeddings import OpenAIEmbeddings
@@ -7,8 +8,9 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import Chroma
 
 api_key=os.environ['OPENAI_API_KEY']
-s3_vector_db_arn = os.environ['VECTOR_DB_ARN']
+s3_vector_db_name = os.environ['VECTOR_DB_NAME']
 embeddings_model = OpenAIEmbeddings(openai_api_key=api_key)
+s3_client = boto3.client('s3')
 
 def handler():
     documents = []
@@ -33,9 +35,14 @@ def handler():
 
         vectordb = Chroma.from_documents(documents, embedding=embeddings_model, persist_directory="./data")
         vectordb.persist()
+        put_training_data(open(file="./data")) 
         print(f'Vector db: {vectordb}')
-
     except Exception as ex:
         print(ex)
 
-
+def put_training_data(data):
+    return s3_client.put_object(
+        Body=data,
+        Bucket=s3_vector_db_name,
+        Key=data.name
+    )
