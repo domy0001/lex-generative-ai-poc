@@ -36,9 +36,14 @@ response=$(aws lambda invoke \
     --cli-binary-format raw-in-base64-out \
     invoke_repsonse.json \
 )
-for json_path_file in $json_dir/*.json;
-do  
-    filename=$(basename $json_path_file)
-    cp $json_dir/$filename $json_dir/created/$filename
-done
+echo $response
+status_code=$(echo "$response" | jq -r '.StatusCode')
+echo $status_code
 
+if [ $status_code == 200 ]; then
+    for json_path_file in $json_dir/*.json;
+    do  
+        filename=$(basename $json_path_file)
+        cp $json_dir/$filename $json_dir/created/$filename
+    done
+fi

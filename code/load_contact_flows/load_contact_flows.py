@@ -9,10 +9,11 @@ def handler(event, context):
     object_key = "encoded_contact_flows.txt"
 
     try:
-        client.put_object(
+        return client.put_object(
             Body=encoded_input_bytes,
             Bucket=bucket_name,
             Key=object_key
         )
     except Exception as ex:
         print(f'Error: {ex}')
+        return f'Error: {ex}'
